@@ -219,11 +219,16 @@ def progressbar():
     key = f'{wav_name}{model_name}{language}{data_type}'
     if key in cfg.progressresult and  isinstance(cfg.progressresult[key],str) and cfg.progressresult[key].startswith('error:'):
         return jsonify({"code":1,"msg":cfg.progressresult[key][6:]})
-        
-    progressbar = cfg.progressbar[key]
-    if progressbar>=1:
-        return jsonify({"code":0, "data":progressbar, "msg":"ok", "result":cfg.progressresult[key]})
-    return jsonify({"code":0, "data":progressbar, "msg":"ok"})
+
+    progressbar = cfg.progressbar.get(key)
+    if progressbar is None:
+        # key不存在时，返回进度0或者其他默认值
+        return jsonify({"code": 0, "data": 0, "msg": "key not found"})
+
+    if progressbar >= 1:
+        return jsonify({"code": 0, "data": progressbar, "msg": "ok", "result": cfg.progressresult.get(key, {})})
+
+    return jsonify({"code": 0, "data": progressbar, "msg": "ok"})
 
 
 def _is_model_exists(model):
